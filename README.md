@@ -14,7 +14,7 @@ WebToMD is a lightweight, fast, and secure API that converts any webpage into cl
 Simply prepend the API URL to any webpage you want to convert:
 
 ```bash
-curl -i https://md.synrg.me/v1/https://wikipedia.org/wiki/API
+curl -i https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API
 ```
 
 The server returns the content with `Content-Type: text/markdown`.

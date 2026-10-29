@@ -4,7 +4,7 @@ export function getLandingHtml(): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markdown Proxy for LLMs - md.synrg.me</title>
+  <title>Markdown Proxy for LLMs - md.synrgs.tech</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -48,7 +48,7 @@ export function getLandingHtml(): string {
     <!-- Header -->
     <header class="flex items-center justify-between mb-10">
       <div class="text-xl font-bold tracking-tight text-white">
-        md.synrg.me
+        md.synrgs.tech
       </div>
       <nav class="hidden sm:flex gap-6 text-sm text-zinc-400 font-medium">
         <a href="#how-it-works" class="hover:text-white transition-colors">How it works</a>
@@ -67,7 +67,7 @@ export function getLandingHtml(): string {
         </h1>
         <p class="text-base md:text-lg text-zinc-400 mb-8">
           Convert any URL into a clean, optimized input for your LLM. 
-          Simply prepend <code class="bg-zinc-900 border border-zinc-800 px-2 py-1 text-white font-mono text-sm mx-1">md.synrg.me/v1/</code> to your link.
+          Simply prepend <code class="bg-zinc-900 border border-zinc-800 px-2 py-1 text-white font-mono text-sm mx-1">md.synrgs.tech/v1/</code> to your link.
         </p>
         
         <!-- Stats -->
@@ -278,7 +278,7 @@ Key sectors include healthcare, finance, and autonomous transport.</pre>
           <span class="text-xs text-zinc-500 font-mono">Example Request</span>
         </div>
         <div class="p-4 overflow-x-auto">
-          <code class="text-sm font-mono text-zinc-300 whitespace-nowrap">curl -i https://md.synrg.me/v1/https://wikipedia.org/wiki/API</code>
+          <code class="text-sm font-mono text-zinc-300 whitespace-nowrap">curl -i https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API</code>
         </div>
       </div>
     </section>
@@ -295,7 +295,7 @@ Key sectors include healthcare, finance, and autonomous transport.</pre>
           </summary>
           <div class="p-4 pt-0 text-zinc-400 text-sm leading-relaxed border-t border-zinc-800 mt-2">
             <p class="mt-2">Simply make a GET request by prepending our API to your target URL.</p>
-            <pre class="bg-zinc-950 p-3 border border-zinc-800 mt-3 overflow-x-auto"><code class="text-white font-mono text-xs">curl -i https://md.synrg.me/v1/https://wikipedia.org/wiki/API</code></pre>
+            <pre class="bg-zinc-950 p-3 border border-zinc-800 mt-3 overflow-x-auto"><code class="text-white font-mono text-xs">curl -i https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API</code></pre>
             <p class="mt-3">The server will return the response with the <code class="bg-zinc-800 px-1">Content-Type: text/markdown</code> header.</p>
           </div>
         </details>
@@ -335,7 +335,7 @@ Key sectors include healthcare, finance, and autonomous transport.</pre>
 
     <!-- Footer -->
     <footer class="text-center text-zinc-500 text-sm pt-12 pb-4 border-t border-zinc-800">
-      <p>Built to save tokens and time. &copy; 2026 synrg.me</p>
+      <p>Built to save tokens and time. &copy; 2026 synrgs.tech</p>
     </footer>
   </div>
 

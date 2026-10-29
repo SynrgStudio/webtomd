@@ -1,3 +1,9 @@
 name = "proxy"
 main = "src/index.ts"
 compatibility_date = "2024-04-14"
+
+# Custom Domain: Cloudflare crea el registro DNS y el certificado solo,
+# siempre que la zona synrgs.tech esté en esta misma cuenta.
+routes = [
+  { pattern = "md.synrgs.tech", custom_domain = true },
+]
