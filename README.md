@@ -11,13 +11,37 @@ WebToMD is a lightweight, fast, and secure API that converts any webpage into cl
 
 ## How to Use
 
-Simply prepend the API URL to any webpage you want to convert:
+Prepend the API URL to any webpage you want to convert, and send your access key:
 
 ```bash
-curl -i https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API
+curl -i -H "Authorization: Bearer $MD_KEY" https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API
 ```
 
-The server returns the content with `Content-Type: text/markdown`.
+The server returns the content with `Content-Type: text/markdown`. `X-Api-Key: <key>` works too, for clients
+that can't set `Authorization`.
+
+## Access keys
+
+The instance at md.synrgs.tech is private: `/v1/` answers `401` without a valid key. The landing page stays
+public, and has a field to paste a key and fetch a page from the browser.
+
+The keys live in the Worker's secret `MD_KEYS`, never in this repository. It holds one key per line, each with
+the name of who uses it, so one person's access can be removed without touching the others:
+
+```text
+# comments and blank lines are ignored
+alice = <a long random key>
+bob   = <another one>
+```
+
+- **Make a key:** `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. Keys shorter
+  than 24 characters are ignored.
+- **Set or change them:** put every line in a local file, outside the repository, and run
+  `npx wrangler secret put MD_KEYS < that-file`. To revoke a key, delete its line and run it again.
+- **See who uses it:** `npx wrangler tail` logs each request with the key's name and the target's host.
+
+Without `MD_KEYS`, every `/v1/` request gets `503`: the Worker never runs open by mistake. To run your own
+open instance, put a key of your own in it, or remove the check in `src/index.ts`.
 
 ## Local Development
 

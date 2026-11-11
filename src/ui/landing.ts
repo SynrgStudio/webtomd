@@ -69,6 +69,10 @@ export function getLandingHtml(): string {
           Convert any URL into a clean, optimized input for your LLM. 
           Simply prepend <code class="bg-zinc-900 border border-zinc-800 px-2 py-1 text-white font-mono text-sm mx-1">md.synrgs.tech/v1/</code> to your link.
         </p>
+        <p class="text-sm text-zinc-500 -mt-4 mb-8">
+          This instance is private: every request needs an access key, sent as <code class="bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 text-zinc-300 font-mono text-xs">Authorization: Bearer &lt;key&gt;</code>.
+          The code is open source, so you can run your own.
+        </p>
         
         <!-- Stats -->
         <div class="flex gap-10 pt-6 border-t border-zinc-800">
@@ -91,6 +95,17 @@ export function getLandingHtml(): string {
       <div class="space-y-6">
         <!-- URL Generator -->
         <div class="bg-zinc-900/50 p-5 border border-zinc-800">
+          <label class="block mb-3">
+            <span class="text-xs text-zinc-500">Access key · kept in this browser only</span>
+            <input
+              type="password"
+              id="access-key"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="Paste your key"
+              class="mt-1 w-full bg-zinc-950 border border-zinc-800 text-white text-sm font-mono focus:ring-1 focus:ring-zinc-700 focus:border-zinc-700 block p-3 outline-none placeholder-zinc-600"
+            >
+          </label>
           <form id="proxy-form" class="flex flex-col sm:flex-row gap-3">
             <div class="relative flex-1">
               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -113,11 +128,19 @@ export function getLandingHtml(): string {
           </form>
           
           <div id="error-msg" class="text-red-400 text-sm mt-3 font-medium hidden"></div>
+          <div id="fetch-result" class="mt-4 hidden">
+            <div class="flex items-center justify-between gap-3 mb-2">
+              <span id="fetch-status" class="text-xs text-zinc-500 font-mono"></span>
+              <button id="fetch-copy" type="button" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1 text-xs font-medium transition-colors">Copy Markdown</button>
+            </div>
+            <pre id="fetch-output" class="bg-zinc-950 border border-zinc-800 p-3 max-h-96 overflow-auto text-xs text-zinc-300 font-mono whitespace-pre-wrap"></pre>
+          </div>
           
           <!-- Result Area -->
           <div id="result-container" class="mt-4 hidden">
             <div class="bg-zinc-900 border border-zinc-700 p-3 flex items-center justify-between gap-3">
               <code id="proxy-link" class="text-white font-mono text-xs break-all flex-1 select-all"></code>
+              <button id="fetch-btn" type="button" class="shrink-0 bg-zinc-200 hover:bg-white text-black px-3 py-1.5 text-xs font-semibold transition-colors">Fetch here</button>
               <button id="copy-btn" class="shrink-0 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                 <span id="copy-text">Copy</span>
@@ -278,7 +301,7 @@ Key sectors include healthcare, finance, and autonomous transport.</pre>
           <span class="text-xs text-zinc-500 font-mono">Example Request</span>
         </div>
         <div class="p-4 overflow-x-auto">
-          <code class="text-sm font-mono text-zinc-300 whitespace-nowrap">curl -i https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API</code>
+          <code class="text-sm font-mono text-zinc-300 whitespace-nowrap">curl -i -H "Authorization: Bearer $MD_KEY" https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API</code>
         </div>
       </div>
     </section>
@@ -294,8 +317,8 @@ Key sectors include healthcare, finance, and autonomous transport.</pre>
             <svg class="w-5 h-5 text-zinc-500 group-open:-rotate-180 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
           </summary>
           <div class="p-4 pt-0 text-zinc-400 text-sm leading-relaxed border-t border-zinc-800 mt-2">
-            <p class="mt-2">Simply make a GET request by prepending our API to your target URL.</p>
-            <pre class="bg-zinc-950 p-3 border border-zinc-800 mt-3 overflow-x-auto"><code class="text-white font-mono text-xs">curl -i https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API</code></pre>
+            <p class="mt-2">Make a GET request by prepending the API to your target URL, with your access key in the <code class="bg-zinc-800 px-1">Authorization</code> header. Without a valid key the answer is <code class="bg-zinc-800 px-1">401</code>.</p>
+            <pre class="bg-zinc-950 p-3 border border-zinc-800 mt-3 overflow-x-auto"><code class="text-white font-mono text-xs">curl -i -H "Authorization: Bearer $MD_KEY" https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API</code></pre>
             <p class="mt-3">The server will return the response with the <code class="bg-zinc-800 px-1">Content-Type: text/markdown</code> header.</p>
           </div>
         </details>
@@ -375,6 +398,43 @@ Key sectors include healthcare, finance, and autonomous transport.</pre>
       setTimeout(() => {
           resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
+    });
+
+    // La clave queda solo en este navegador (localStorage) y viaja en el encabezado, nunca en la URL.
+    const keyInput = document.getElementById('access-key');
+    try { keyInput.value = localStorage.getItem('mdKey') || ''; } catch (e) {}
+    keyInput.addEventListener('input', function() {
+      try { localStorage.setItem('mdKey', keyInput.value.trim()); } catch (e) {}
+    });
+
+    document.getElementById('fetch-btn').addEventListener('click', async function() {
+      const link = document.getElementById('proxy-link').textContent;
+      const key = keyInput.value.trim();
+      const box = document.getElementById('fetch-result');
+      const status = document.getElementById('fetch-status');
+      const out = document.getElementById('fetch-output');
+      box.classList.remove('hidden');
+      if (!key) {
+        status.textContent = 'Paste your access key first.';
+        out.textContent = '';
+        return;
+      }
+      status.textContent = 'Fetching…';
+      out.textContent = '';
+      try {
+        const res = await fetch(link, { headers: { Authorization: 'Bearer ' + key } });
+        const text = await res.text();
+        status.textContent = res.status === 401 ? 'That key is not valid.' : 'HTTP ' + res.status + ' · ' + text.length + ' characters';
+        out.textContent = text;
+      } catch (err) {
+        status.textContent = 'Could not reach the proxy.';
+      }
+    });
+
+    document.getElementById('fetch-copy').addEventListener('click', function() {
+      navigator.clipboard.writeText(document.getElementById('fetch-output').textContent);
+      this.textContent = 'Copied!';
+      setTimeout(() => { this.textContent = 'Copy Markdown'; }, 1500);
     });
 
     document.getElementById('copy-btn').addEventListener('click', function() {
