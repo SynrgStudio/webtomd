@@ -1,5 +1,5 @@
 {
-  "name": "webtomd",
+  "name": "webtomd-mcp",
   "version": "1.0.0",
   "description": "Any web page as clean Markdown for AI agents: a local MCP server, with the same extractor as md.synrgs.tech.",
   "type": "module",
@@ -19,7 +19,8 @@
     "test": "vitest run",
     "build:mcp": "node mcp/build.mjs",
     "mcp": "node bin/webtomd-mcp.mjs",
-    "build:landing": "node src/ui/build-landing.mjs"
+    "build:landing": "node src/ui/build-landing.mjs",
+    "prepublishOnly": "npm run build:mcp && npm test"
   },
   "repository": {
     "type": "git",

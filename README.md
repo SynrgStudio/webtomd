@@ -8,35 +8,35 @@ Site: [md.synrgs.tech](https://md.synrgs.tech)
 
 ## Install
 
-Needs [Node.js](https://nodejs.org/) 20 or newer and Git. `npx` downloads WebToMD from GitHub the first time and
+Needs [Node.js](https://nodejs.org/) 20 or newer. `npx` downloads WebToMD from npm the first time and
 keeps it.
 
 **Claude Code**
 
 ```bash
-claude mcp add --scope user webtomd -- npx -y github:SynrgStudio/webtomd
+claude mcp add --scope user webtomd -- npx -y webtomd-mcp
 ```
 
-On Windows, through `cmd`: `claude mcp add --scope user webtomd -- cmd /c npx -y github:SynrgStudio/webtomd`.
+On Windows, through `cmd`: `claude mcp add --scope user webtomd -- cmd /c npx -y webtomd-mcp`.
 
 **Claude Desktop, Cursor and others** (`claude_desktop_config.json`, `~/.cursor/mcp.json`; VS Code uses `"servers"`):
 
 ```json
 {
   "mcpServers": {
-    "webtomd": { "command": "npx", "args": ["-y", "github:SynrgStudio/webtomd"] }
+    "webtomd": { "command": "npx", "args": ["-y", "webtomd-mcp"] }
   }
 }
 ```
 
-On Windows, if the app can't start `npx`: `"command": "cmd"`, `"args": ["/c", "npx", "-y", "github:SynrgStudio/webtomd"]`.
+On Windows, if the app can't start `npx`: `"command": "cmd"`, `"args": ["/c", "npx", "-y", "webtomd-mcp"]`.
 
 **Codex** (`~/.codex/config.toml`):
 
 ```toml
 [mcp_servers.webtomd]
 command = "npx"
-args = ["-y", "github:SynrgStudio/webtomd"]
+args = ["-y", "webtomd-mcp"]
 ```
 
 ## The tool: `fetch_markdown`
@@ -70,7 +70,7 @@ reported, not converted.
 - `src/extract/`: the extractor, HTML to Markdown with cheerio and html-to-md. Shared by the MCP server and the
   Worker.
 - `mcp/`: the MCP server (`server.ts`) and the browser (`browser.ts`, playwright-core). `npm run build:mcp` bundles
-  them into `bin/webtomd-mcp.mjs`, which is committed: installing from GitHub then builds nothing, and the only
+  them into `bin/webtomd-mcp.mjs`, which is what npm publishes (and is committed): installing builds nothing, and the only
   dependency it downloads is playwright-core.
 - `src/index.ts`: the Cloudflare Worker behind md.synrgs.tech. It serves the landing page (`src/ui/landing.html`,
   turned into `landing.ts` by `npm run build:landing`) and the private `/v1/` API.

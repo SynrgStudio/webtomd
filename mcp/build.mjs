@@ -1,5 +1,5 @@
 // Bundles the MCP server into one file, bin/webtomd-mcp.mjs, which is committed:
-// installing from GitHub then needs no build, only playwright-core (loaded the
+// installing then needs no build, only playwright-core (loaded the
 // first time a page needs a browser).
 import { build } from "esbuild";
 import { readFileSync } from "node:fs";

@@ -136,10 +136,10 @@
       <h1>Any web page, as Markdown <span>your agent can actually read.</span></h1>
       <p class="lede">Give your AI agent a URL and it gets the page back as clean Markdown: no menus, scripts or ads, and <strong>nothing summarized</strong>, so prices, tables and specs come out exact. Pages that only exist after their JavaScript runs are opened in a real browser.</p>
       <div class="cmd">
-        <code><span class="p">$ </span>claude mcp add webtomd -- npx -y github:SynrgStudio/webtomd</code>
-        <button class="copy" type="button" data-copy="claude mcp add webtomd -- npx -y github:SynrgStudio/webtomd">Copy</button>
+        <code><span class="p">$ </span>claude mcp add webtomd -- npx -y webtomd-mcp</code>
+        <button class="copy" type="button" data-copy="claude mcp add webtomd -- npx -y webtomd-mcp">Copy</button>
       </div>
-      <p class="needs">Needs <a href="https://nodejs.org/" rel="noopener">Node.js 20</a> or newer and Git. The first start downloads everything else. <a href="#install">Other apps</a></p>
+      <p class="needs">Needs <a href="https://nodejs.org/" rel="noopener">Node.js 20</a> or newer. The first start downloads everything else. <a href="#install">Other apps</a></p>
     </div>
 
     <div class="demo" aria-label="An example call and its answer">
@@ -188,17 +188,17 @@ Add to cart</pre>
       <p class="sec-n">02 · Install</p>
       <div>
         <h2>One line, then ask for a page.</h2>
-        <p>Every app below starts it the same way: <code>npx</code> downloads WebToMD from GitHub the first time and keeps it. Then ask your agent something like “read this page and compare the prices”.</p>
+        <p>Every app below starts it the same way: <code>npx</code> downloads WebToMD from npm the first time and keeps it. Then ask your agent something like “read this page and compare the prices”.</p>
       </div>
     </div>
     <div class="tabs">
       <input type="radio" name="t" id="t1" checked><input type="radio" name="t" id="t2"><input type="radio" name="t" id="t3"><input type="radio" name="t" id="t4">
       <div class="tab-row"><label for="t1">Claude Code</label><label for="t2">Claude Desktop</label><label for="t3">Cursor · VS Code</label><label for="t4">Codex</label></div>
       <div class="pane p1">
-        <pre>claude mcp add --scope user webtomd -- npx -y github:SynrgStudio/webtomd</pre>
+        <pre>claude mcp add --scope user webtomd -- npx -y webtomd-mcp</pre>
         <p><code>--scope user</code> makes it available in every project. Check it with <code>claude mcp list</code>.</p>
         <p>On Windows, Claude Code starts <code>npx</code> through <code>cmd</code>:</p>
-        <pre>claude mcp add --scope user webtomd -- cmd /c npx -y github:SynrgStudio/webtomd</pre>
+        <pre>claude mcp add --scope user webtomd -- cmd /c npx -y webtomd-mcp</pre>
       </div>
       <div class="pane p2">
         <p>Settings → Developer → Edit Config, then add it to <code>claude_desktop_config.json</code> and restart the app:</p>
@@ -206,17 +206,17 @@ Add to cart</pre>
   "mcpServers": {
     "webtomd": {
       "command": "npx",
-      "args": ["-y", "github:SynrgStudio/webtomd"]
+      "args": ["-y", "webtomd-mcp"]
     }
   }
 }</pre>
-        <p>If Windows can't start <code>npx</code>, use <code>"command": "cmd"</code> and <code>"args": ["/c", "npx", "-y", "github:SynrgStudio/webtomd"]</code>.</p>
+        <p>If Windows can't start <code>npx</code>, use <code>"command": "cmd"</code> and <code>"args": ["/c", "npx", "-y", "webtomd-mcp"]</code>.</p>
       </div>
       <div class="pane p3">
         <p>Cursor: <code>~/.cursor/mcp.json</code>. VS Code: <code>.vscode/mcp.json</code> (with <code>"servers"</code> instead of <code>"mcpServers"</code>).</p>
 <pre>{
   "mcpServers": {
-    "webtomd": { "command": "npx", "args": ["-y", "github:SynrgStudio/webtomd"] }
+    "webtomd": { "command": "npx", "args": ["-y", "webtomd-mcp"] }
   }
 }</pre>
       </div>
@@ -224,7 +224,7 @@ Add to cart</pre>
         <p>In <code>~/.codex/config.toml</code>:</p>
 <pre>[mcp_servers.webtomd]
 command = "npx"
-args = ["-y", "github:SynrgStudio/webtomd"]</pre>
+args = ["-y", "webtomd-mcp"]</pre>
       </div>
     </div>
   </section>
