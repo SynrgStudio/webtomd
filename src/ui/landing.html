@@ -197,6 +197,8 @@ Add to cart</pre>
       <div class="pane p1">
         <pre>claude mcp add --scope user webtomd -- npx -y github:SynrgStudio/webtomd</pre>
         <p><code>--scope user</code> makes it available in every project. Check it with <code>claude mcp list</code>.</p>
+        <p>On Windows, Claude Code starts <code>npx</code> through <code>cmd</code>:</p>
+        <pre>claude mcp add --scope user webtomd -- cmd /c npx -y github:SynrgStudio/webtomd</pre>
       </div>
       <div class="pane p2">
         <p>Settings → Developer → Edit Config, then add it to <code>claude_desktop_config.json</code> and restart the app:</p>

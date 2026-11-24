@@ -17,6 +17,8 @@ keeps it.
 claude mcp add --scope user webtomd -- npx -y github:SynrgStudio/webtomd
 ```
 
+On Windows, through `cmd`: `claude mcp add --scope user webtomd -- cmd /c npx -y github:SynrgStudio/webtomd`.
+
 **Claude Desktop, Cursor and others** (`claude_desktop_config.json`, `~/.cursor/mcp.json`; VS Code uses `"servers"`):
 
 ```json
