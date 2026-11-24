@@ -83,7 +83,7 @@ export default {
 
         console.log(`${owner} · fetch · ${safeHost(targetUrl)}`);
         const html = await fetchResponse.text();
-        const markdown = htmlToCleanMarkdown(html);
+        const markdown = htmlToCleanMarkdown(html, fetchResponse.url || targetUrl);
 
         if (!markdown || markdown.trim() === "") {
           return createErrorResponse(

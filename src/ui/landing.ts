@@ -1,467 +1,302 @@
+// Written by build-landing.mjs from landing.html: edit that file, not this one.
 export function getLandingHtml(): string {
   return `<!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markdown Proxy for LLMs - md.synrgs.tech</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              500: '#ffffff',
-              600: '#e4e4e7',
-              900: '#27272a',
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    details > summary { list-style: none; }
-    details > summary::-webkit-details-marker { display: none; }
-    details[open] summary ~ * {
-      animation: slideDown 0.3s ease-in-out;
-    }
-    @keyframes slideDown {
-      0% { opacity: 0; transform: translateY(-10px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    textarea::-webkit-scrollbar,
-    pre::-webkit-scrollbar { width: 6px; }
-    textarea::-webkit-scrollbar-track,
-    pre::-webkit-scrollbar-track { background: #1a1a1a; }
-    textarea::-webkit-scrollbar-thumb,
-    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebToMD — any web page as Markdown, for your AI agent</title>
+<meta name="description" content="WebToMD is an MCP server that runs on your computer: give your agent a URL, get the page back as clean Markdown. Nothing summarized, prices and tables exact, JavaScript pages opened in a real browser.">
+<meta property="og:title" content="WebToMD — any web page as Markdown, for your AI agent">
+<meta property="og:description" content="A local MCP server: clean Markdown from any page, nothing summarized.">
+<meta property="og:url" content="https://md.synrgs.tech/">
+<meta name="theme-color" content="#09090b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2309090b'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='monospace' font-size='15' font-weight='700' fill='%23fff'%3EM%E2%86%93%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #09090b; --panel: #111114; --panel-2: #17171b; --line: #26262b; --line-2: #33333a;
+    --text: #d4d4d8; --dim: #a1a1aa; --faint: #71717a; --white: #fafafa; --ok: #4ade80; --accent: #fafafa;
+    --mono: ui-monospace, "Cascadia Code", "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+    background: radial-gradient(60% 40% at 80% 0%, rgba(250,250,250,.06), transparent 70%),
+                linear-gradient(rgba(250,250,250,.025) 1px, transparent 1px) 0 0 / 100% 32px; }
+  a { color: inherit; }
+  ::selection { background: var(--white); color: #000; }
+  .wrap { width: min(1120px, 100% - 32px); margin: 0 auto; }
+  code, pre, .mono { font-family: var(--mono); font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0; }
+
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 0; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; color: var(--white); text-decoration: none; letter-spacing: -.01em; }
+  .brand i { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--line-2); border-radius: 6px; font: 700 12px var(--mono); font-style: normal; }
+  nav.links { display: flex; gap: 20px; font-size: .88rem; color: var(--dim); }
+  nav.links a { text-decoration: none; }
+  nav.links a:hover { color: var(--white); }
+
+  .hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 56px; align-items: center; padding: 56px 0 72px; }
+  .kicker { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 18px; font: 500 .74rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+  .kicker b { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 4px rgba(74,222,128,.15); }
+  h1 { margin: 0 0 20px; color: var(--white); font-size: clamp(2.3rem, 5.4vw, 4rem); line-height: 1.02; letter-spacing: -.04em; font-weight: 800; text-wrap: balance; }
+  h1 span { color: var(--faint); }
+  .lede { margin: 0 0 30px; max-width: 34em; font-size: 1.1rem; color: var(--dim); }
+  .lede strong { color: var(--white); font-weight: 600; }
+
+  .cmd { position: relative; display: flex; align-items: center; gap: 12px; padding: 14px 14px 14px 18px; border: 1px solid var(--line-2); background: var(--panel); border-radius: 10px; }
+  .cmd code { flex: 1; min-width: 0; overflow-wrap: anywhere; color: var(--white); font-size: .9rem; line-height: 1.5; }
+  .cmd code .p { color: var(--faint); user-select: none; }
+  .copy { flex: none; border: 1px solid var(--line-2); background: var(--panel-2); color: var(--text); border-radius: 7px; padding: 7px 12px; font: 500 .78rem var(--mono); cursor: pointer; }
+  .copy:hover { color: var(--white); border-color: var(--faint); }
+  .copy.done { color: var(--ok); border-color: rgba(74,222,128,.4); }
+  .needs { margin: 12px 0 0; font-size: .85rem; color: var(--faint); }
+  .needs a { color: var(--dim); }
+
+  /* The demo: what goes in, what comes out */
+  .demo { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); overflow: hidden; box-shadow: 0 40px 80px -40px rgba(0,0,0,.9); }
+  .demo-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); font: .72rem var(--mono); color: var(--faint); }
+  .demo-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--line-2); }
+  .demo-bar span { margin-left: 8px; }
+  .demo pre { margin: 0; padding: 18px 20px; font-size: .78rem; line-height: 1.65; overflow-x: auto; color: var(--text); }
+  .demo .call { color: var(--dim); border-bottom: 1px dashed var(--line); }
+  .k { color: var(--faint); } .s { color: #a5f3fc; } .h { color: var(--white); font-weight: 700; } .n { color: #fcd34d; } .m { color: var(--faint); }
+
+  section.block { padding: 72px 0; border-top: 1px solid var(--line); }
+  .sec-head { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; margin-bottom: 36px; }
+  .sec-n { font: .74rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); padding-top: 10px; }
+  h2 { margin: 0; color: var(--white); font-size: clamp(1.7rem, 3.4vw, 2.4rem); letter-spacing: -.03em; line-height: 1.1; font-weight: 750; text-wrap: balance; }
+  .sec-head p { margin: 12px 0 0; color: var(--dim); max-width: 40em; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+  .cell { padding: 26px 24px 28px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .cell h3 { margin: 0 0 8px; color: var(--white); font-size: 1.05rem; letter-spacing: -.01em; }
+  .cell p { margin: 0; color: var(--dim); font-size: .95rem; }
+  .cell .tag { display: block; margin-bottom: 14px; font: .7rem var(--mono); color: var(--faint); }
+  .cell code { font-size: .85em; color: var(--white); }
+
+  .tabs { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--panel); }
+  .tabs input { position: absolute; opacity: 0; pointer-events: none; }
+  .tab-row { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+  .tab-row label { padding: 12px 18px; font: 500 .8rem var(--mono); color: var(--faint); cursor: pointer; border-right: 1px solid var(--line); }
+  .tab-row label:hover { color: var(--text); }
+  .pane { display: none; padding: 22px 22px 24px; }
+  .pane p { margin: 0 0 14px; color: var(--dim); font-size: .95rem; }
+  .pane p:last-child { margin-bottom: 0; }
+  .pane pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 14px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); overflow-x: auto; font-size: .82rem; color: var(--white); }
+  #t1:checked ~ .tab-row [for=t1], #t2:checked ~ .tab-row [for=t2], #t3:checked ~ .tab-row [for=t3], #t4:checked ~ .tab-row [for=t4] { color: var(--white); background: var(--panel-2); box-shadow: inset 0 -2px 0 var(--white); }
+  #t1:checked ~ .p1, #t2:checked ~ .p2, #t3:checked ~ .p3, #t4:checked ~ .p4 { display: block; }
+  .tabs input:focus-visible ~ .tab-row { outline: 1px solid var(--faint); }
+
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  th { font: 500 .72rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+  td:first-child { white-space: nowrap; }
+  td code { color: var(--white); }
+  td .d { color: var(--faint); font-family: var(--mono); font-size: .8rem; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+  .table-wrap tr:last-child td { border-bottom: 0; }
+
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .note { padding: 22px 24px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+  .note h3 { margin: 0 0 10px; color: var(--white); font-size: 1rem; }
+  .note ul { margin: 0; padding-left: 18px; color: var(--dim); font-size: .93rem; }
+  .note li { margin: 6px 0; }
+  .note code { color: var(--white); font-size: .85em; }
+
+  footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 32px 0 48px; border-top: 1px solid var(--line); color: var(--faint); font-size: .85rem; }
+  footer a { color: var(--dim); }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: minmax(0, 1fr); gap: 40px; padding: 32px 0 56px; }
+    .sec-head { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    .sec-n { padding-top: 0; }
+    .grid { grid-template-columns: minmax(0, 1fr); }
+    .two { grid-template-columns: minmax(0, 1fr); }
+    nav.links { display: none; }
+    section.block { padding: 56px 0; }
+  }
+</style>
 </head>
-<body class="bg-zinc-950 text-zinc-300 font-sans antialiased min-h-screen selection:bg-white selection:text-black">
-  
-  <!-- Main Container - 80% width -->
-  <div class="w-[90%] lg:w-[80%] mx-auto px-4 py-8 md:py-12">
-    
-    <!-- Header -->
-    <header class="flex items-center justify-between mb-10">
-      <div class="text-xl font-bold tracking-tight text-white">
-        md.synrgs.tech
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/"><i>M↓</i>WebToMD</a>
+    <nav class="links">
+      <a href="#install">Install</a>
+      <a href="#tool">The tool</a>
+      <a href="#limits">Limits</a>
+      <a href="https://github.com/SynrgStudio/webtomd" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="kicker"><b></b>MCP server · runs on your computer</p>
+      <h1>Any web page, as Markdown <span>your agent can actually read.</span></h1>
+      <p class="lede">Give your AI agent a URL and it gets the page back as clean Markdown: no menus, scripts or ads, and <strong>nothing summarized</strong>, so prices, tables and specs come out exact. Pages that only exist after their JavaScript runs are opened in a real browser.</p>
+      <div class="cmd">
+        <code><span class="p">$ </span>claude mcp add webtomd -- npx -y github:SynrgStudio/webtomd</code>
+        <button class="copy" type="button" data-copy="claude mcp add webtomd -- npx -y github:SynrgStudio/webtomd">Copy</button>
       </div>
-      <nav class="hidden sm:flex gap-6 text-sm text-zinc-400 font-medium">
-        <a href="#how-it-works" class="hover:text-white transition-colors">How it works</a>
-        <a href="#benefits" class="hover:text-white transition-colors">Benefits</a>
-        <a href="#faq" class="hover:text-white transition-colors">FAQ</a>
-      </nav>
-    </header>
+      <p class="needs">Needs <a href="https://nodejs.org/" rel="noopener">Node.js 20</a> or newer and Git. The first start downloads everything else. <a href="#install">Other apps</a></p>
+    </div>
 
-    <!-- Hero Section - Two Columns -->
-    <section class="grid lg:grid-cols-2 gap-10 lg:gap-16 mb-16 py-8 lg:py-12 items-center">
-      
-      <!-- Left Column: Hero Content -->
-      <div class="flex flex-col justify-center">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6 leading-tight">
-          Nothing screams efficiency<br class="hidden md:block"> like pure Markdown.
-        </h1>
-        <p class="text-base md:text-lg text-zinc-400 mb-8">
-          Convert any URL into a clean, optimized input for your LLM. 
-          Simply prepend <code class="bg-zinc-900 border border-zinc-800 px-2 py-1 text-white font-mono text-sm mx-1">md.synrgs.tech/v1/</code> to your link.
-        </p>
-        <p class="text-sm text-zinc-500 -mt-4 mb-8">
-          This instance is private: every request needs an access key, sent as <code class="bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 text-zinc-300 font-mono text-xs">Authorization: Bearer &lt;key&gt;</code>.
-          The code is open source, so you can run your own.
-        </p>
-        
-        <!-- Stats -->
-        <div class="flex gap-10 pt-6 border-t border-zinc-800">
-          <div>
-            <p class="text-2xl font-bold text-white">99%</p>
-            <p class="text-xs text-zinc-500">Token savings</p>
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-white">10ms</p>
-            <p class="text-xs text-zinc-500">Avg response</p>
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-white">Free</p>
-            <p class="text-xs text-zinc-500">Open source</p>
-          </div>
-        </div>
+    <div class="demo" aria-label="An example call and its answer">
+      <div class="demo-bar"><i></i><i></i><i></i><span>fetch_markdown</span></div>
+<pre><span class="call"><span class="k">url</span> <span class="s">"https://shop.example/mugs"</span></span>
+
+<span class="h"># Mugs — Example Shop</span>
+<span class="m">Source: https://shop.example/mugs · fetched · 18,204 characters
+Saved to: …\\Temp\\webtomd\\shop-example-mugs-3f9a1c20.md</span>
+
+<span class="h">## Structured product data (JSON-LD)</span>
+
+| Product           | Price  | Availability |
+|---|---|---|
+| Stoneware mug 350 | <span class="n">24 USD</span> | InStock      |
+| Stoneware mug 500 | <span class="n">29 USD</span> | OutOfStock   |
+
+<span class="m">---</span>
+
+<span class="h">### Stoneware mug 350 ml</span>
+Glazed by hand. <span class="n">$32.00 $24.00</span>
+Add to cart</pre>
+    </div>
+  </section>
+
+  <section class="block" id="why">
+    <div class="sec-head">
+      <p class="sec-n">01 · What you get</p>
+      <div>
+        <h2>The page itself, not a summary of it.</h2>
+        <p>Most web tools hand the model a paraphrase. WebToMD hands it the page, cleaned, and keeps a copy on disk.</p>
       </div>
+    </div>
+    <div class="grid">
+      <div class="cell"><span class="tag">exact</span><h3>Nothing summarized</h3><p>Numbers survive: list prices next to sale prices, every row of a table, every product of a grid.</p></div>
+      <div class="cell"><span class="tag">stores</span><h3>Prices from the source</h3><p>When a page carries schema.org Product data, it comes first as a table: name, price, currency, availability.</p></div>
+      <div class="cell"><span class="tag">javascript</span><h3>A real browser when needed</h3><p>If the plain fetch comes back nearly empty or blocked, the page opens in the Edge or Chrome you already have.</p></div>
+      <div class="cell"><span class="tag">long pages</span><h3>In parts, or just the lines you need</h3><p>Long pages come back in parts with an <code>offset</code>; <code>find</code> returns only the lines around a word.</p></div>
+      <div class="cell"><span class="tag">on disk</span><h3>A file for every page</h3><p>The whole page is saved as a Markdown file, so the agent can search it again without fetching it twice.</p></div>
+      <div class="cell"><span class="tag">local</span><h3>No key, no quota</h3><p>It runs on your computer and fetches from your connection. Nothing goes through our servers.</p></div>
+    </div>
+  </section>
 
-      <!-- Right Column: URL Generator + Demo -->
-      <div class="space-y-6">
-        <!-- URL Generator -->
-        <div class="bg-zinc-900/50 p-5 border border-zinc-800">
-          <label class="block mb-3">
-            <span class="text-xs text-zinc-500">Access key · kept in this browser only</span>
-            <input
-              type="password"
-              id="access-key"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="Paste your key"
-              class="mt-1 w-full bg-zinc-950 border border-zinc-800 text-white text-sm font-mono focus:ring-1 focus:ring-zinc-700 focus:border-zinc-700 block p-3 outline-none placeholder-zinc-600"
-            >
-          </label>
-          <form id="proxy-form" class="flex flex-col sm:flex-row gap-3">
-            <div class="relative flex-1">
-              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg class="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-              </div>
-              <input 
-                type="url" 
-                id="target-url" 
-                placeholder="https://example.com/article" 
-                pattern="https?://.*" 
-                title="Must be a valid URL starting with http:// or https://" 
-                required
-                class="w-full bg-zinc-950 border border-zinc-800 text-white text-sm focus:ring-1 focus:ring-zinc-700 focus:border-zinc-700 block pl-11 p-3 transition-all outline-none placeholder-zinc-600"
-              >
-            </div>
-            <button type="submit" class="bg-zinc-200 hover:bg-white text-black font-semibold py-3 px-5 transition-colors whitespace-nowrap flex items-center justify-center gap-2 text-sm">
-              Generate Link
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-            </button>
-          </form>
-          
-          <div id="error-msg" class="text-red-400 text-sm mt-3 font-medium hidden"></div>
-          <div id="fetch-result" class="mt-4 hidden">
-            <div class="flex items-center justify-between gap-3 mb-2">
-              <span id="fetch-status" class="text-xs text-zinc-500 font-mono"></span>
-              <button id="fetch-copy" type="button" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1 text-xs font-medium transition-colors">Copy Markdown</button>
-            </div>
-            <pre id="fetch-output" class="bg-zinc-950 border border-zinc-800 p-3 max-h-96 overflow-auto text-xs text-zinc-300 font-mono whitespace-pre-wrap"></pre>
-          </div>
-          
-          <!-- Result Area -->
-          <div id="result-container" class="mt-4 hidden">
-            <div class="bg-zinc-900 border border-zinc-700 p-3 flex items-center justify-between gap-3">
-              <code id="proxy-link" class="text-white font-mono text-xs break-all flex-1 select-all"></code>
-              <button id="fetch-btn" type="button" class="shrink-0 bg-zinc-200 hover:bg-white text-black px-3 py-1.5 text-xs font-semibold transition-colors">Fetch here</button>
-              <button id="copy-btn" class="shrink-0 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                <span id="copy-text">Copy</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Live Demo Panels -->
-        <div class="flex flex-col md:flex-row gap-4 items-stretch relative">
-          <!-- Input Panel (HTML) -->
-          <div class="flex-1 bg-zinc-900 border border-zinc-800 overflow-hidden">
-            <div class="flex items-center gap-4 px-4 py-2 border-b border-zinc-800 bg-zinc-900/80">
-              <div class="flex gap-1.5">
-                <div class="w-2.5 h-2.5 rounded-full bg-zinc-600"></div>
-                <div class="w-2.5 h-2.5 rounded-full bg-zinc-600"></div>
-                <div class="w-2.5 h-2.5 rounded-full bg-zinc-600"></div>
-              </div>
-              <span class="text-xs text-zinc-500 font-mono">raw_source.html</span>
-              <span class="text-[10px] bg-red-500/10 text-red-400 px-1.5 py-0.5 border border-red-500/20 font-mono ml-auto">~1,452 tokens</span>
-            </div>
-            <div class="p-3">
-              <pre class="w-full h-32 bg-transparent text-[10px] font-mono text-zinc-500 overflow-auto leading-tight opacity-60">
-&lt;!-- Typical bloated header --&gt;
-&lt;header class="nav-6_component"&gt;
-  &lt;div class="nav-6_container"&gt;
-    &lt;div class="nav-6_menu-button w-nav-button"&gt;
-      &lt;div class="nav-6_menu-icon"&gt;
-        &lt;div class="menu-icon_line-top"&gt;&lt;/div&gt;
-        &lt;div class="menu-icon_line-middle"&gt;&lt;/div&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-    &lt;script src="https://analytics.io/track.js"&gt;&lt;/script&gt;
-    &lt;style&gt;.nav-6 { display: flex; font-size: 1.2rem; }&lt;/style&gt;
-  &lt;/div&gt;
-&lt;/header&gt;
-&lt;main class="section-hero"&gt;
-  &lt;h1&gt;The Future of AI&lt;/h1&gt;
-  &lt;p&gt;Artificial Intelligence is evolving rapidly...&lt;/p&gt;
-  &lt;p&gt;It is predicted that by 2030...&lt;/p&gt;
-&lt;/main&gt;</pre>
-            </div>
-          </div>
-
-          <!-- Connection Arrow Decorator (Desktop Horizontal) -->
-          <div class="hidden md:flex flex-col items-center justify-center gap-1 self-center z-20 px-1 shrink-0">
-            <div class="bg-red-500/20 h-px w-6"></div>
-            <div class="bg-zinc-950 border border-zinc-700 px-1.5 py-1 rounded-sm text-[9px] font-black text-white whitespace-nowrap shadow-xl border-dashed">
-              -96.7%
-            </div>
-            <div class="flex items-center">
-              <div class="bg-gradient-to-r from-red-500/50 to-emerald-500/50 h-px w-6"></div>
-              <div class="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] border-l-emerald-500/50"></div>
-            </div>
-          </div>
-
-          <!-- Output Panel (Markdown) -->
-          <div class="flex-1 bg-zinc-900 border border-zinc-800 overflow-hidden">
-            <div class="flex items-center gap-4 px-4 py-2 border-b border-zinc-800 bg-zinc-900/80">
-              <div class="flex gap-1.5">
-                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500/50"></div>
-                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500/30"></div>
-                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500/20"></div>
-              </div>
-              <span class="text-xs text-zinc-500 font-mono">optimized.md</span>
-              <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 border border-emerald-500/20 font-mono ml-auto">~48 tokens</span>
-            </div>
-            <div class="p-3 relative group">
-              <pre id="textOutput" class="w-full h-32 bg-transparent text-xs font-mono text-emerald-400 overflow-auto leading-relaxed">
-# The Future of AI
-
-Artificial Intelligence is evolving rapidly...
-It is predicted that by 2030, AI will contribute $15.7 trillion to the global economy. 
-Key sectors include healthcare, finance, and autonomous transport.</pre>
-            </div>
-          </div>
-        </div>
-        <p class="text-[10px] text-zinc-600 text-center uppercase tracking-[0.2em] pt-4">Instant context optimization</p>
+  <section class="block" id="install">
+    <div class="sec-head">
+      <p class="sec-n">02 · Install</p>
+      <div>
+        <h2>One line, then ask for a page.</h2>
+        <p>Every app below starts it the same way: <code>npx</code> downloads WebToMD from GitHub the first time and keeps it. Then ask your agent something like “read this page and compare the prices”.</p>
       </div>
-    </section>
-
-    <hr class="border-zinc-800 my-16">
-
-    <!-- Benefits Section -->
-    <section id="benefits" class="mb-20">
-      <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 text-center">Real-world impact</h2>
-      <p class="text-center text-zinc-400 mb-10 max-w-3xl mx-auto">We ran our extraction against some of the heaviest pages on the internet. The difference in context window usage is massive.</p>
-      
-      <div class="grid md:grid-cols-2 gap-6 mb-8 max-w-4xl mx-auto">
-        <!-- Example 1: CNN -->
-        <div class="bg-zinc-900 border border-zinc-800 p-6">
-          <div class="flex justify-between items-start mb-4">
-            <h3 class="text-lg font-bold text-white">CNN Homepage</h3>
-            <div class="bg-white text-black text-xs font-bold px-2 py-1">99% SAVINGS</div>
-          </div>
-          <div class="space-y-3">
-            <div>
-              <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Raw HTML Tokens</p>
-              <div class="text-xl font-mono text-zinc-400 line-through decoration-red-500">1,381,059</div>
-            </div>
-            <div>
-              <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Clean Markdown Tokens</p>
-              <div class="text-2xl font-mono text-white font-bold">13,652</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Example 2: TechCrunch -->
-        <div class="bg-zinc-900 border border-zinc-800 p-6">
-          <div class="flex justify-between items-start mb-4">
-            <h3 class="text-lg font-bold text-white">TechCrunch Homepage</h3>
-            <div class="bg-white text-black text-xs font-bold px-2 py-1">92% SAVINGS</div>
-          </div>
-          <div class="space-y-3">
-            <div>
-              <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Raw HTML Tokens</p>
-              <div class="text-xl font-mono text-zinc-400 line-through decoration-red-500">134,747</div>
-            </div>
-            <div>
-              <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Clean Markdown Tokens</p>
-              <div class="text-2xl font-mono text-white font-bold">10,575</div>
-            </div>
-          </div>
-        </div>
+    </div>
+    <div class="tabs">
+      <input type="radio" name="t" id="t1" checked><input type="radio" name="t" id="t2"><input type="radio" name="t" id="t3"><input type="radio" name="t" id="t4">
+      <div class="tab-row"><label for="t1">Claude Code</label><label for="t2">Claude Desktop</label><label for="t3">Cursor · VS Code</label><label for="t4">Codex</label></div>
+      <div class="pane p1">
+        <pre>claude mcp add --scope user webtomd -- npx -y github:SynrgStudio/webtomd</pre>
+        <p><code>--scope user</code> makes it available in every project. Check it with <code>claude mcp list</code>.</p>
       </div>
-      
-      <div class="bg-zinc-900/40 border border-zinc-800 p-6 text-center max-w-3xl mx-auto">
-        <p class="text-sm text-zinc-400 leading-relaxed">LLMs have limited context windows and charge per token. Bypassing ads, inline CSS, heavy SVG icons, tracking scripts, and deep nested divs drastically reduces cost, avoids hallucinations, and speeds up response times.</p>
+      <div class="pane p2">
+        <p>Settings → Developer → Edit Config, then add it to <code>claude_desktop_config.json</code> and restart the app:</p>
+<pre>{
+  "mcpServers": {
+    "webtomd": {
+      "command": "npx",
+      "args": ["-y", "github:SynrgStudio/webtomd"]
+    }
+  }
+}</pre>
+        <p>If Windows can't start <code>npx</code>, use <code>"command": "cmd"</code> and <code>"args": ["/c", "npx", "-y", "github:SynrgStudio/webtomd"]</code>.</p>
       </div>
-    </section>
-
-    <!-- How it Works Section -->
-    <section id="how-it-works" class="mb-20 max-w-[90rem] mx-auto px-4">
-      <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center">How it works</h2>
-      
-      <div class="grid xl:grid-cols-3 gap-6 mb-10">
-        <div class="bg-zinc-900 border border-zinc-800 p-6 w-full">
-          <div class="w-10 h-10 bg-white/10 flex items-center justify-center mb-4 text-white font-bold">1</div>
-          <h3 class="font-semibold text-white mb-3 text-lg">Paste any URL</h3>
-          <p class="text-zinc-400 text-sm whitespace-nowrap">Enter any webpage URL containing content you want to extract.</p>
-        </div>
-        <div class="bg-zinc-900 border border-zinc-800 p-6 w-full">
-          <div class="w-10 h-10 bg-white/10 flex items-center justify-center mb-4 text-white font-bold">2</div>
-          <h3 class="font-semibold text-white mb-3 text-lg">We clean it</h3>
-          <p class="text-zinc-400 text-sm whitespace-nowrap">Our API fetches the page and extracts clean Markdown content.</p>
-        </div>
-        <div class="bg-zinc-900 border border-zinc-800 p-6 w-full">
-          <div class="w-10 h-10 bg-white/10 flex items-center justify-center mb-4 text-white font-bold">3</div>
-          <h3 class="font-semibold text-white mb-3 text-lg">Use with LLMs</h3>
-          <p class="text-zinc-400 text-sm whitespace-nowrap">Feed the optimized output directly to your favorite AI model.</p>
-        </div>
+      <div class="pane p3">
+        <p>Cursor: <code>~/.cursor/mcp.json</code>. VS Code: <code>.vscode/mcp.json</code> (with <code>"servers"</code> instead of <code>"mcpServers"</code>).</p>
+<pre>{
+  "mcpServers": {
+    "webtomd": { "command": "npx", "args": ["-y", "github:SynrgStudio/webtomd"] }
+  }
+}</pre>
       </div>
-
-      <!-- API Example -->
-      <div class="bg-zinc-900 border border-zinc-800 overflow-hidden max-w-2xl mx-auto">
-        <div class="flex items-center gap-4 px-4 py-2 border-b border-zinc-800">
-          <span class="text-xs px-2 py-0.5 bg-emerald-500/20 text-emerald-400 font-medium">GET</span>
-          <span class="text-xs text-zinc-500 font-mono">Example Request</span>
-        </div>
-        <div class="p-4 overflow-x-auto">
-          <code class="text-sm font-mono text-zinc-300 whitespace-nowrap">curl -i -H "Authorization: Bearer $MD_KEY" https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API</code>
-        </div>
+      <div class="pane p4">
+        <p>In <code>~/.codex/config.toml</code>:</p>
+<pre>[mcp_servers.webtomd]
+command = "npx"
+args = ["-y", "github:SynrgStudio/webtomd"]</pre>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- FAQ Section -->
-    <section id="faq" class="max-w-3xl mx-auto mb-20">
-      <h2 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center">Frequently Asked Questions</h2>
-      
-      <div class="space-y-4">
-        <details class="group bg-zinc-900 border border-zinc-800 overflow-hidden">
-          <summary class="flex items-center justify-between cursor-pointer p-4 font-semibold text-zinc-200 hover:bg-zinc-800 transition-colors select-none">
-            How do I use this in my code or AI Agent?
-            <svg class="w-5 h-5 text-zinc-500 group-open:-rotate-180 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-          </summary>
-          <div class="p-4 pt-0 text-zinc-400 text-sm leading-relaxed border-t border-zinc-800 mt-2">
-            <p class="mt-2">Make a GET request by prepending the API to your target URL, with your access key in the <code class="bg-zinc-800 px-1">Authorization</code> header. Without a valid key the answer is <code class="bg-zinc-800 px-1">401</code>.</p>
-            <pre class="bg-zinc-950 p-3 border border-zinc-800 mt-3 overflow-x-auto"><code class="text-white font-mono text-xs">curl -i -H "Authorization: Bearer $MD_KEY" https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API</code></pre>
-            <p class="mt-3">The server will return the response with the <code class="bg-zinc-800 px-1">Content-Type: text/markdown</code> header.</p>
-          </div>
-        </details>
-
-        <details class="group bg-zinc-900 border border-zinc-800 overflow-hidden">
-          <summary class="flex items-center justify-between cursor-pointer p-4 font-semibold text-zinc-200 hover:bg-zinc-800 transition-colors select-none">
-            Can the proxy execute JavaScript or bypass Paywalls?
-            <svg class="w-5 h-5 text-zinc-500 group-open:-rotate-180 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-          </summary>
-          <div class="p-4 pt-0 text-zinc-400 text-sm leading-relaxed border-t border-zinc-800 mt-2">
-            <p class="mt-2"><strong class="text-white">No.</strong> Our server acts as a "static read-only" agent for maximum security and speed.</p>
-            <ul class="list-disc pl-5 mt-2 space-y-1">
-              <li>It does not execute target page JavaScript.</li>
-              <li>It automatically removes any <code class="bg-zinc-800 px-1">&lt;script&gt;</code> tag to prevent malicious code injection.</li>
-              <li>If a page is a pure Single Page Application (SPA) without Server-Side Rendering, the proxy will return a Markdown warning.</li>
-            </ul>
-          </div>
-        </details>
-
-        <details class="group bg-zinc-900 border border-zinc-800 overflow-hidden">
-          <summary class="flex items-center justify-between cursor-pointer p-4 font-semibold text-zinc-200 hover:bg-zinc-800 transition-colors select-none">
-            What happens if the URL is invalid or private?
-            <svg class="w-5 h-5 text-zinc-500 group-open:-rotate-180 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-          </summary>
-          <div class="p-4 pt-0 text-zinc-400 text-sm leading-relaxed border-t border-zinc-800 mt-2">
-            <p class="mt-2">The proxy has built-in Anti-SSRF (Server-Side Request Forgery) measures. It will immediately block requests to:</p>
-            <ul class="list-disc pl-5 mt-2 space-y-1">
-              <li>Localhost (127.0.0.1)</li>
-              <li>Private networks (e.g., 192.168.x.x, 10.x.x.x)</li>
-              <li>Non-HTTP schemas (e.g., ftp://, file://)</li>
-            </ul>
-            <p class="mt-2">In these cases, you will receive a clear error message formatted in Markdown.</p>
-          </div>
-        </details>
+  <section class="block" id="tool">
+    <div class="sec-head">
+      <p class="sec-n">03 · The tool</p>
+      <div>
+        <h2><code>fetch_markdown</code></h2>
+        <p>One tool. Only <code>url</code> is required; the rest is there when a page is long, stubborn or both.</p>
       </div>
-    </section>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Argument</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>url</code></td><td>The full address, with <code>https://</code>. Local pages (<code>localhost</code>) work too.</td></tr>
+          <tr><td><code>render</code> <span class="d">auto</span></td><td><code>auto</code> opens a browser only when the plain fetch is nearly empty or blocked; <code>always</code> goes straight to it; <code>never</code> doesn't.</td></tr>
+          <tr><td><code>find</code></td><td>Only the lines with this text, two lines around each, numbered.</td></tr>
+          <tr><td><code>offset</code> <span class="d">0</span></td><td>Where to start in the Markdown, to read a long page in parts. The answer says where the next part starts.</td></tr>
+          <tr><td><code>max_chars</code> <span class="d">30000</span></td><td>The most characters in one answer.</td></tr>
+          <tr><td><code>save_to</code></td><td>Also save the Markdown to this file.</td></tr>
+          <tr><td><code>fresh</code> <span class="d">false</span></td><td>Fetch again instead of using the copy kept for an hour.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-    <!-- Footer -->
-    <footer class="text-center text-zinc-500 text-sm pt-12 pb-4 border-t border-zinc-800">
-      <p>Built to save tokens and time. &copy; 2026 synrgs.tech</p>
-    </footer>
-  </div>
+  <section class="block" id="limits">
+    <div class="sec-head">
+      <p class="sec-n">04 · Good to know</p>
+      <div>
+        <h2>What it does, and what it won't.</h2>
+      </div>
+    </div>
+    <div class="two">
+      <div class="note">
+        <h3>Limits</h3>
+        <ul>
+          <li>No cookies or logins are sent: pages behind an account stay closed.</li>
+          <li>Some sites stop automated visits even in a real browser. WebToMD says so when it lands on a login or verification page.</li>
+          <li>Requests leave from your own connection, like your browser's.</li>
+          <li>Only web pages: a PDF or an image is reported, not converted.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h3>Settings</h3>
+        <ul>
+          <li><code>WEBTOMD_DIR</code>: where pages are saved (the system's temporary folder by default).</li>
+          <li><code>WEBTOMD_CACHE_S</code>: how long a page is kept, in seconds (3600).</li>
+          <li><code>WEBTOMD_BROWSER</code>: the path of a browser to use instead of Edge or Chrome.</li>
+          <li>With no Edge or Chrome, the first JavaScript page downloads a headless Chromium once (about 100 MB).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
-  <script>
-    // URL Generator
-    document.getElementById('proxy-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const targetUrl = document.getElementById('target-url').value.trim();
-      const errorDiv = document.getElementById('error-msg');
-      const resultDiv = document.getElementById('result-container');
-      
-      errorDiv.classList.add('hidden');
-      resultDiv.classList.add('hidden');
-
-      if (!targetUrl) return;
-
-      try {
-        const url = new URL(targetUrl);
-        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-          throw new Error('Only http:// or https:// URLs are allowed.');
-        }
-        if (url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname.startsWith('192.168.') || url.hostname.startsWith('10.')) {
-          throw new Error('Local or private URLs are not allowed.');
-        }
-      } catch (err) {
-        errorDiv.textContent = err.message || 'Please enter a valid full URL (e.g., https://wikipedia.org).';
-        errorDiv.classList.remove('hidden');
-        return;
-      }
-
-      const baseUrl = window.location.origin + '/v1/';
-      const proxyUrl = baseUrl + targetUrl;
-      document.getElementById('proxy-link').textContent = proxyUrl;
-      resultDiv.classList.remove('hidden');
-      
-      // Smooth scroll to result
-      setTimeout(() => {
-          resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
-    });
-
-    // La clave queda solo en este navegador (localStorage) y viaja en el encabezado, nunca en la URL.
-    const keyInput = document.getElementById('access-key');
-    try { keyInput.value = localStorage.getItem('mdKey') || ''; } catch (e) {}
-    keyInput.addEventListener('input', function() {
-      try { localStorage.setItem('mdKey', keyInput.value.trim()); } catch (e) {}
-    });
-
-    document.getElementById('fetch-btn').addEventListener('click', async function() {
-      const link = document.getElementById('proxy-link').textContent;
-      const key = keyInput.value.trim();
-      const box = document.getElementById('fetch-result');
-      const status = document.getElementById('fetch-status');
-      const out = document.getElementById('fetch-output');
-      box.classList.remove('hidden');
-      if (!key) {
-        status.textContent = 'Paste your access key first.';
-        out.textContent = '';
-        return;
-      }
-      status.textContent = 'Fetching…';
-      out.textContent = '';
-      try {
-        const res = await fetch(link, { headers: { Authorization: 'Bearer ' + key } });
-        const text = await res.text();
-        status.textContent = res.status === 401 ? 'That key is not valid.' : 'HTTP ' + res.status + ' · ' + text.length + ' characters';
-        out.textContent = text;
-      } catch (err) {
-        status.textContent = 'Could not reach the proxy.';
-      }
-    });
-
-    document.getElementById('fetch-copy').addEventListener('click', function() {
-      navigator.clipboard.writeText(document.getElementById('fetch-output').textContent);
-      this.textContent = 'Copied!';
-      setTimeout(() => { this.textContent = 'Copy Markdown'; }, 1500);
-    });
-
-    document.getElementById('copy-btn').addEventListener('click', function() {
-      const linkText = document.getElementById('proxy-link').textContent;
-      navigator.clipboard.writeText(linkText).then(() => {
-        const textSpan = document.getElementById('copy-text');
-        textSpan.textContent = 'Copied!';
-        this.classList.add('bg-white', 'text-black');
-        this.classList.remove('bg-zinc-800', 'text-zinc-300');
-        setTimeout(() => {
-          textSpan.textContent = 'Copy';
-          this.classList.remove('bg-white', 'text-black');
-          this.classList.add('bg-zinc-800', 'text-zinc-300');
-        }, 2000);
+  <footer>
+    <span>WebToMD · open source, by <a href="https://synrgs.tech" rel="noopener">SynrgStudio</a></span>
+    <a href="https://github.com/SynrgStudio/webtomd" rel="noopener">github.com/SynrgStudio/webtomd</a>
+  </footer>
+</div>
+<script>
+  document.querySelectorAll("[data-copy]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      navigator.clipboard.writeText(b.getAttribute("data-copy")).then(function () {
+        b.textContent = "Copied"; b.classList.add("done");
+        setTimeout(function () { b.textContent = "Copy"; b.classList.remove("done"); }, 1600);
       });
     });
-
-    document.getElementById('copyOutputBtn').addEventListener('click', function() {
-      const textOutput = document.getElementById('textOutput');
-      navigator.clipboard.writeText(textOutput.textContent).then(() => {
-        this.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> Copied!';
-        setTimeout(() => {
-          this.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copy';
-        }, 2000);
-      });
-    });
-  </script>
+  });
+</script>
 </body>
 </html>
 `;

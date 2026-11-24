@@ -49,4 +49,20 @@ describe("htmlToCleanMarkdown", () => {
     expect(md).not.toContain(".rojo");
     expect(md).not.toContain("alert");
   });
+  it("makes relative links and images whole when it knows the page's address", () => {
+    const html = `<main><p><a href="/profile/x">Perfil</a> <a href="#top">Arriba</a> <img src="img/a.png" alt="A"></p></main>`;
+    const md = htmlToCleanMarkdown(html, "https://example.com/blog/post");
+    expect(md).toContain("(https://example.com/profile/x)");
+    expect(md).toContain("(#top)");
+    expect(md).toContain("(https://example.com/blog/img/a.png)");
+  });
+
+  it("keeps a button's words but not its tag, and drops link and template tags", () => {
+    const html = `<main><link rel="x"><template><p>oculto</p></template><p>Remera</p><button>Agregar <b>al carrito</b></button></main>`;
+    const md = htmlToCleanMarkdown(html);
+    expect(md).toContain("Agregar al carrito");
+    expect(md).not.toContain("<button");
+    expect(md).not.toContain("<link");
+    expect(md).not.toContain("oculto");
+  });
 });

@@ -1,24 +1,52 @@
 {
-  "name": "llmhtmlmdconv",
+  "name": "webtomd",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Any web page as clean Markdown for AI agents: a local MCP server, with the same extractor as md.synrgs.tech.",
+  "type": "module",
+  "bin": {
+    "webtomd-mcp": "bin/webtomd-mcp.mjs"
+  },
+  "files": [
+    "bin/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:mcp": "node mcp/build.mjs",
+    "mcp": "node bin/webtomd-mcp.mjs",
+    "build:landing": "node src/ui/build-landing.mjs"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SynrgStudio/webtomd.git"
+  },
+  "keywords": [
+    "mcp",
+    "markdown",
+    "llm",
+    "web",
+    "scraper",
+    "claude"
+  ],
+  "author": "SynrgStudio",
+  "license": "MIT",
   "dependencies": {
-    "cheerio": "^1.2.0",
-    "html-to-md": "^0.8.8"
+    "playwright-core": "^1.65.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260414.1",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "cheerio": "^1.2.0",
+    "esbuild": "^0.28.2",
+    "html-to-md": "^0.8.8",
     "typescript": "^6.0.2",
     "vitest": "^4.1.4",
-    "wrangler": "^4.82.2"
+    "wrangler": "^4.82.2",
+    "zod": "^4.6.7"
   }
 }

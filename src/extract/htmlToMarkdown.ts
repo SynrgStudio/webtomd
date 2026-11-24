@@ -4,9 +4,29 @@ import { extractStructuredProducts, productsToMarkdown } from "./structuredData"
 
 type CheerioRoot = ReturnType<typeof cheerio.load>;
 
-export function htmlToCleanMarkdown(html: string): string {
+// baseUrl: the page's address, so relative links and images come out whole.
+export function htmlToCleanMarkdown(html: string, baseUrl?: string): string {
   // Load HTML into Cheerio
   const $ = cheerio.load(html);
+
+  if (baseUrl) {
+    const absolute = (v: string | undefined) => {
+      if (!v || /^(#|data:|javascript:|mailto:|tel:)/i.test(v)) return v;
+      try {
+        return new URL(v, baseUrl).href;
+      } catch {
+        return v;
+      }
+    };
+    $("a[href]").each((_, el) => {
+      const v = absolute($(el).attr("href"));
+      if (v) $(el).attr("href", v);
+    });
+    $("img[src]").each((_, el) => {
+      const v = absolute($(el).attr("src"));
+      if (v) $(el).attr("src", v);
+    });
+  }
 
   // JSON-LD vive en <script>, así que hay que leerlo ANTES de limpiar el ruido.
   // Muchas tiendas exponen ahí el schema Product/Offer con el precio limpio.
@@ -23,6 +43,10 @@ export function htmlToCleanMarkdown(html: string): string {
     "header",
     "aside",
     "svg",
+    // html-to-md writes tags it doesn't know as they are (<link />, <template>)
+    "link",
+    "meta",
+    "template",
     "[role='dialog']",
     "[role='banner']",
     "[role='navigation']",
@@ -44,6 +68,11 @@ export function htmlToCleanMarkdown(html: string): string {
   // (dejamos sus hijos en el lugar) para no perder nombre/precio del producto.
   $("form").each((_, el) => {
     $(el).replaceWith($(el).contents());
+  });
+  // Same for buttons: their words stay ("Add to cart", a variant's name), the tag goes.
+  $("button").each((_, el) => {
+    const text = $(el).text().trim().replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    $(el).replaceWith(` ${text} `);
   });
 
   const content = pickMainContent($)

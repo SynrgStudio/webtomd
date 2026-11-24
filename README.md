@@ -1,98 +1,100 @@
 # WebToMD
 
-WebToMD is a lightweight, fast, and secure API that converts any webpage into clean, LLM-optimized Markdown. It bypasses ads, tracking scripts, and heavy styling to provide only the essential content, significantly reducing token usage for AI models.
+Any web page as clean Markdown for your AI agent. WebToMD is an MCP server that runs on your computer: give it a
+URL and it returns the page without menus, scripts, ads or styling, and **nothing summarized**, so prices, tables
+and specs come out exact. Pages that only exist after their JavaScript runs are opened in a real browser.
 
-## Features
+Site: [md.synrgs.tech](https://md.synrgs.tech)
 
-- **Efficiency**: Reduces HTML token size by up to 90%.
-- **Clean Output**: Removes scripts, styles, and non-essential elements.
-- **Security**: Acts as a read-only agent; no JavaScript execution on target pages.
-- **Easy Integration**: Simple GET request API.
+## Install
 
-## How to Use
+Needs [Node.js](https://nodejs.org/) 20 or newer and Git. `npx` downloads WebToMD from GitHub the first time and
+keeps it.
 
-Prepend the API URL to any webpage you want to convert, and send your access key:
-
-```bash
-curl -i -H "Authorization: Bearer $MD_KEY" https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API
-```
-
-The server returns the content with `Content-Type: text/markdown`. `X-Api-Key: <key>` works too, for clients
-that can't set `Authorization`.
-
-## Access keys
-
-The instance at md.synrgs.tech is private: `/v1/` answers `401` without a valid key. The landing page stays
-public, and has a field to paste a key and fetch a page from the browser.
-
-The keys live in the Worker's secret `MD_KEYS`, never in this repository. It holds one key per line, each with
-the name of who uses it, so one person's access can be removed without touching the others:
-
-```text
-# comments and blank lines are ignored
-alice = <a long random key>
-bob   = <another one>
-```
-
-- **Make a key:** `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. Keys shorter
-  than 24 characters are ignored.
-- **Set or change them:** put every line in a local file, outside the repository, and run
-  `npx wrangler secret put MD_KEYS < that-file`. To revoke a key, delete its line and run it again.
-- **See who uses it:** `npx wrangler tail` logs each request with the key's name and the target's host.
-
-Without `MD_KEYS`, every `/v1/` request gets `503`: the Worker never runs open by mistake. To run your own
-open instance, put a key of your own in it, or remove the check in `src/index.ts`.
-
-## Local Development
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [npm](https://www.npmjs.com/)
-- [Wrangler](https://developers.cloudflare.com/workers/wrangler/install-and-update/) (for Cloudflare Workers development)
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/SynrgStudio/webtomd.git
-   cd webtomd
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-### Running Locally
-
-To start the development server:
+**Claude Code**
 
 ```bash
-npm start
+claude mcp add --scope user webtomd -- npx -y github:SynrgStudio/webtomd
 ```
 
-This will run the worker locally using Wrangler. You can then access the landing page or use the API at `http://localhost:8787`.
+**Claude Desktop, Cursor and others** (`claude_desktop_config.json`, `~/.cursor/mcp.json`; VS Code uses `"servers"`):
 
-### Testing
+```json
+{
+  "mcpServers": {
+    "webtomd": { "command": "npx", "args": ["-y", "github:SynrgStudio/webtomd"] }
+  }
+}
+```
 
-Run the test suite using Vitest:
+On Windows, if the app can't start `npx`: `"command": "cmd"`, `"args": ["/c", "npx", "-y", "github:SynrgStudio/webtomd"]`.
+
+**Codex** (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.webtomd]
+command = "npx"
+args = ["-y", "github:SynrgStudio/webtomd"]
+```
+
+## The tool: `fetch_markdown`
+
+| Argument | Default | What it does |
+|---|---|---|
+| `url` | | The full address, with `https://`. Local pages (`localhost`) work too. |
+| `render` | `auto` | `auto` opens a browser only when the plain fetch is nearly empty or blocked; `always` goes straight to it; `never` doesn't. |
+| `find` | | Only the lines with this text, two lines around each, numbered. |
+| `offset` | `0` | Where to start in the Markdown, to read a long page in parts. |
+| `max_chars` | `30000` | The most characters in one answer. |
+| `save_to` | | Also save the Markdown to this file. |
+| `fresh` | `false` | Fetch again instead of using the copy kept for an hour. |
+
+Every answer starts with the page's title, its final address, how it was read (fetched, or rendered in Edge,
+Chrome or Chromium) and the file where the whole page was saved. When a page carries schema.org Product data,
+a table with name, price, currency and availability comes first.
+
+**The browser.** WebToMD uses the Edge or Chrome already installed. With neither, the first page that needs one
+downloads Playwright's headless Chromium (about 100 MB), once.
+
+**Settings** (environment variables): `WEBTOMD_DIR` where pages are saved (the system's temporary folder),
+`WEBTOMD_CACHE_S` how long a page is kept (3600 seconds), `WEBTOMD_BROWSER` the path of a browser to use instead.
+
+**Limits.** No cookies or logins are sent. Some sites stop automated visits even in a real browser; WebToMD says
+so when it lands on a login or verification page. Requests leave from your own connection. A PDF or an image is
+reported, not converted.
+
+## How it is built
+
+- `src/extract/`: the extractor, HTML to Markdown with cheerio and html-to-md. Shared by the MCP server and the
+  Worker.
+- `mcp/`: the MCP server (`server.ts`) and the browser (`browser.ts`, playwright-core). `npm run build:mcp` bundles
+  them into `bin/webtomd-mcp.mjs`, which is committed: installing from GitHub then builds nothing, and the only
+  dependency it downloads is playwright-core.
+- `src/index.ts`: the Cloudflare Worker behind md.synrgs.tech. It serves the landing page (`src/ui/landing.html`,
+  turned into `landing.ts` by `npm run build:landing`) and the private `/v1/` API.
 
 ```bash
-npm test
+npm install
+npm test                                  # the extractor and the Worker
+npm run build:mcp                         # after changing mcp/ or src/extract/
+node mcp/smoke.mjs https://example.com    # the bundled server, as an MCP client sees it (also render=always, find=word)
+npm run dev                               # the Worker at http://localhost:8787
+npm run deploy                            # the Worker to Cloudflare
 ```
 
-## Deployment
+## The hosted API
 
-This project is designed to be deployed as a **Cloudflare Worker**.
-
-To deploy to your own Cloudflare account:
+md.synrgs.tech also answers `GET /v1/<url>` with the page as Markdown, for whoever has a key:
 
 ```bash
-npm run deploy
+curl -H "Authorization: Bearer $MD_KEY" https://md.synrgs.tech/v1/https://wikipedia.org/wiki/API
 ```
 
-Make sure you have configured your `wrangler.toml` with the appropriate settings.
+It is private: the keys live in the Worker's secret `MD_KEYS`, one per line as `name = key` (keys shorter than 24
+characters are ignored). Set them with `npx wrangler secret put MD_KEYS < file-outside-the-repo`; to revoke one,
+delete its line and run it again. `npx wrangler tail` logs each request with the key's name and the target's host.
+Without `MD_KEYS`, `/v1/` answers `503`. It runs on Cloudflare's free plan, so very large pages can hit its CPU
+limit; the MCP server has no such limit.
 
 ## License
 
